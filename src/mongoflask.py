@@ -4,6 +4,7 @@ import isodate as iso
 from bson import ObjectId
 from flask.json import JSONEncoder
 from werkzeug.routing import BaseConverter
+from flask import Response
 
 
 class MongoJSONEncoder(JSONEncoder):
@@ -26,5 +27,10 @@ class ObjectIdConverter(BaseConverter):
 def find_restaurants(mongo, _id=None):
     query = {}
     if _id:
-        query["_id"] = ObjectId(id)
-    return list(mongo.db.restaurant.find(query))
+        query["_id"] = ObjectId(_id)
+        if mongo.db.restaurant.find_one(query) is None:
+            return Response(status=204)
+        else:
+            return mongo.db.restaurant.find_one(query)
+    else:
+        return list(mongo.db.restaurant.find(query))
